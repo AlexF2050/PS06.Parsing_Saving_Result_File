@@ -5,3 +5,7 @@
 
 [DZ_PS06_CSV_Parsing_Saving_Result.py](DZ_PS06_CSV_Parsing_Saving_Result.py)
 
+![ps06-1.png](ps06-1.png)
+![ps06-2.png](ps06-2.png)
+
+ps06-1.png
