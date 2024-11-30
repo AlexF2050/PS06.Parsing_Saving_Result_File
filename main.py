@@ -1,56 +1,47 @@
-import time
 import csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from openpyxl import Workbook
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-# Путь к вашему драйверу Chrome
+# Инициализация драйвера
 driver = webdriver.Chrome()
-# URL страницы для парсинга
-url = 'https://www.divan.ru/novosibirsk/category/odeala'
+url = 'https://www.divan.ru/chelyabinsk/category/podvesnye-svetilniki'
+
+# Переход на сайт
 driver.get(url)
-# Даем странице время на загрузку
-time.sleep(5)
-# Находим все элементы с товарами
-products = driver.find_elements(By.CSS_SELECTOR, 'div[data-testid="product-card"]')
-# Список для хранения данных
-data = []
-# Извлекаем данные о каждом товаре
-for product in products:
-    name_element = product.find_element(By.CSS_SELECTOR, 'span[itemprop="name"]')
-    price_element = product.find_element(By.CLASS_NAME, 'ui-LD-ZU')
-    image_element = product.find_element(By.TAG_NAME, 'img')
-    name = name_element.text
-    price = price_element.text
-    image_src = image_element.get_attribute('src')
-    data.append({
-        'Наименование товара': name,
-        'Цена товара': price,
-        'Ссылка на картинку': image_src
-    })
-# Закрываем драйвер
+
+# Ожидание загрузки элементов
+try:
+    light_divans = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div.LlPhw'))
+    )
+except Exception as e:
+    print(f'Ошибка при загрузке страницы: {e}')
+    driver.quit()
+    exit()
+
+parsed_data = []
+
+# Парсинг данных
+for light_divan in light_divans:
+    try:
+        name = light_divan.find_element(By.CSS_SELECTOR, 'div.lsooF').text.splitlines()[0].strip()
+        price = light_divan.find_element(By.CSS_SELECTOR, 'div.pY3d2').text.splitlines()[0].strip()
+        price = price[:-4].strip()
+        url_light = light_divan.find_element(By.CSS_SELECTOR, 'a').get_attribute('href')
+    except Exception as e:
+        print(f'Произошла ошибка при парсинге сайта: {e}')
+        continue
+
+    parsed_data.append([name, price, url_light])
+
+# Завершение работы драйвера
 driver.quit()
 
-# Сохраняем данные в CSV файл
-with open('products.csv', mode='w', newline='', encoding='utf-8') as file:
-    writer = csv.DictWriter(file, fieldnames=data[0].keys())
-    writer.writeheader()
-    writer.writerows(data)
-print("Данные успешно сохранены в products.csv")
-
-# Сохраняем данные в XLSX файл
-workbook = Workbook()
-sheet = workbook.active
-sheet.title = "Товары"
-
-# Записываем заголовки
-sheet.append(['Наименование товара', 'Цена товара', 'Ссылка на картинку'])
-
-# Записываем данные
-for item in data:
-    sheet.append([item['Наименование товара'], item['Цена товара'], item['Ссылка на картинку']])
-
-# Сохраняем файл
-workbook.save('products.xlsx')
-print("Данные успешно сохранены в products.xlsx")
+# Запись данных в CSV файл
+with open('Price_lights_divan.csv', 'w', newline='', encoding='utf-8') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Название светильника', 'Цена, руб.', 'Ссылка на сайт'])
+    writer.writerows(parsed_data)
 
