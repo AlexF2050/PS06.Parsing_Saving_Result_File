@@ -53,4 +53,3 @@ for item in data:
 # Сохраняем файл
 workbook.save('products.xlsx')
 print("Данные успешно сохранены в products.xlsx")
-
