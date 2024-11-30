@@ -1,22 +1,24 @@
 # Когда мы парсим данные с различных веб-страниц, мы часто получаем сырые данные, которые неудобно (или вообще нельзя) использовать и которые нуждаются в обработке.
 # В обработку входят:
 # очистка данных — удаление лишних пробелов, специальных символов, лишней информации, исправление некорректных, повреждённых данных и т.д. Когда мы регулируем парсинг, лишней информации может почти не быть;
-# преобразование данных — перевод строк в числа и т.п.;
-# фильтрация данных — отбор только нужный случай
+
 
 
 import requests
 
 from bs4 import BeautifulSoup
 
-url = 'https://www.python.org'
+url = 'https://'
 
-response = requests.get(url)
+response = requests.get(url) # получаем html-страницу и сохраняем в переменную response
 
-soup = BeautifulSoup(response.text, 'html.parser')
+soup = BeautifulSoup(response.text, 'html.parser') # парсим html-страницу и сохраняем в переменную soup
 
-rows = soup.find_all('tr')
-data = []
-for row in rows:
-    cols = row.find_all('td')
+rows = soup.find_all('tr') # получаем все строки таблицы
+data = [] # создаём список
+for row in rows: # перебираем все строки таблицы
+    cols = row.find_all('td') # получаем все td в строке
     cleaned_cols = [col.text.strip() for col in cols] # удаление лишних пробелов () если в скобки поставить символ то удалится символ
+    data.append(cleaned_cols) # добавление в список data только нужные данные
+
+print(data)
